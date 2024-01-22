@@ -9,7 +9,7 @@
 - Web mining
 - Web monitoring
 
-We will look into Search Engine Indexing
+We will look into `Search Engine Indexing`
 
 ## Building User Requirements
 ### Collecting User's needs with Assumptions
@@ -54,9 +54,7 @@ QPS
 
 Storage
 - 1 billion/month * 500kb/pages * 12 month * 30 years = 4800 billion KB = 120000 TB
-    ![스크린샷 2024-01-15 오후 9.33.31.png](..%2F..%2F..%2F..%2F..%2F..%2Fvar%2Ffolders%2F7w%2F_w36dp4s1j5cxhz3khwpsxc40000gn%2FT%2FTemporaryItems%2FNSIRD_screencaptureui_tI1btE%2F%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202024-01-15%20%EC%98%A4%ED%9B%84%209.33.31.png)
-  (ChatGPT's answer)
-    - Consider that single Magnetic Tape ~= 200 TB
+ - Consider that single Magnetic Tape ~= 200 TB
     - Also, We need consideration of Write I/O.
 
 In-Memory 
@@ -86,67 +84,43 @@ Conclusion
       - List of URLs to be traversed (URLs to visit and update) 
         - URL to be traversed
         - URL to be updated (with update policy. We cannot traverse all.)
-      - Maintain a list of URLs in memory
-      - Caching mechanism for faster updates (with caching policy)
-   - Considerations
-     - Graph Traversal Considerations
-     - Data Type: List? Tree? B+ Tree?
-     - Database Type : NoSQL? RDBMS?
+   - Consideration
+     - Maintain a list of URLs in memory
+     - Caching mechanism for faster updates (with caching policy)
+     - Make priority
+   - Communication with next module
+     - Kafka
+       - Easy for communicating with cluster by task
+       - Can Divide priority
+       - Producer & Consumer pattern
 
-2. HTML Downloader
-   - Feature
+2. HTML Downloader & Validator (by cluster, Async)
+    
+    A. HTML Downloader
+    - Feature
       - Download HTML files from web pages
       - Requires DNS Resolver for hostname resolution
-      - Asynchronous operation for network-bound tasks
-   - Considerations
-     - How to manage Async Tasks 
-3. HTML File Validator
-   - CPU-bound task (can utilize multithreading or distributed processing)
-   - Can be implemented in parallel for multiple HTML files
+     - Considerations
+       - How to manage Async Tasks 
+       - Communcation with next Module
 
-4. Duplicate HTML Checker
-   - Highly dependent on a database (read operations)
-   - Parallel implementation possible
-   - Asynchronous operation for efficient processing
+    B. HTML File Validator & Duplicated HTML Checker
+   - Feature
+     - Validate HTML & Gather next URL
+     - Manage by each database
+     - Write HTML Files on database
+   - Communication with next module
+     - Redis
+       - Key Value Store with next url.
+       - Sequence is not important.
 
-5. URL Extractor
-   - Extract URLs from HTML files
-   - Can be integrated with the Duplicate HTML Checker
 
-6. URL Filter & Manager
-   - Check URL duplicity and manage the URL Repository
-
-7. RSS Feed Analyzer (optional)
+3. RSS Feed Analyzer (optional)
    - Analyze RSS feeds if needed for content updates
 
-    
-Abstract Diagram
-```text
+### Software Diagram
+<img src="asset/img1.png">
 
-Components Interaction:
-URL Repository - HTML Downloader            - HTML File Validator 
-               |
-               Message Queue
-               |
-               |- Duplicate HTML Checker    - URL Extractor
-               |                            |
-               |                            |- URL Filter & Manager
-               |- RSS Feed Analyzer (if RSS feeds are considered)
-```
-
-
-### Cluster Architecture
-- Considerations
-  - SPOF(Single Point of Fault)
-  - I/O Bounds (Database, Internet connection)
-  - Database
-  WIP
-
-### Software Architecture
-- Structure Diagram
-  - WIP
-- Behaviour Diagram
-  - WIP
 ## In detaiils
 ### Algorithm
 1. Graph Traversal Considerations
@@ -159,12 +133,7 @@ URL Repository - HTML Downloader            - HTML File Validator
    - Both
      - Priority: Need to be prioritized based on user's choice
         - Based on Priority Queue
-     
-2. Managing problematic Contents
-3. Detecting Duplicated Contents
-### Respecting `Robots.txt`
-### Database Schema
-WIP
+
 ### Optimization
 Performance
 1. Distributed 
@@ -180,13 +149,10 @@ Performance
 4. Timeout
     - Short Timeout
 
-Durability
-1. Hashing
-2. Memorization
-3. Solid Exception
-
-
 ## Further Talk
-### Analyzation Tool
 ### Link with Machine Learning
 ## Reference
+https://docs.aws.amazon.com/msk/latest/developerguide/mkc-create-topic.html
+- Kafka로 우선순위를?: https://community.aws/posts/prioritizing-event-processing-with-apache-kafka
+- Resequencer : https://www.enterpriseintegrationpatterns.com/patterns/messaging/Resequencer.html
+- Smart Endpoint and Dummy Pipe: https://martinfowler.com/articles/microservices.html#SmartEndpointsAndDumbPipes
